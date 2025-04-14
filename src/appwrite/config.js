@@ -1,0 +1,106 @@
+import { conf } from "../conf/conf";
+import { Client, ID, Databases, Storage, Query } from "appwrite";
+
+export class Service {
+  client = new Client();
+  databases;
+  bucket;
+  constructor() {
+    this.client = new Client()
+      .setEndpoint(conf.appwriteUrl) // Your API Endpoint
+      .setProject(conf.appwriteProjectId); // Your project ID
+    this.databases = new Databases(this.client);
+    this.bucket = new Storage(this.client);
+  }
+
+  async createPost({ title, slug, content, featuredImage, status, userId }) {
+    try {
+      return await this.databases.createDocument(
+        conf.appwriteDatabaseId,
+        conf.appwriteCollectionId,
+        slug,
+        { title, content, featuredImage, status, userId }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async updatePost(slug, { title, content, featuredImage, status }) {
+    try {
+      return await this.databases.updateDocument(
+        conf.appwriteDatabaseId,
+        conf.appwriteCollectionId,
+        slug,
+        { title, content, featuredImage, status }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async deletePost(slug) {
+    try {
+      return await this.databases.deleteDocument(
+        conf.appwriteDatabaseId,
+        conf.appwriteCollectionId,
+        slug
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async getPost(slug) {
+    try {
+      return await this.databases.getDocument(
+        conf.appwriteDatabaseId,
+        conf.appwriteCollectionId,
+        slug
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async getPosts(queries = [Query.equal("status", "active")]) {
+    try {
+      return await this.databases.listDocument(
+        conf.appwriteDatabaseId,
+        conf.appwriteCollectionId,
+        queries
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  // file upload serivce / method
+  async uploadFile(file) {
+    try {
+      return await this.databases.createFile(
+        conf.appwriteBucketId,
+        ID.unique(),
+        file
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async deleteFile(fileId) {
+    try {
+      return await this.databases.deleteFile(conf.appwriteBucketId, fileId);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  getFilePreview(fileId) {
+    return this.bucket.getFilePreview(conf.appwriteBucketId, fileId);
+  }
+}
+
+const service = new Service();
+
+export default service;
